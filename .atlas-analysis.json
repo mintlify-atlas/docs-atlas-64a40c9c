@@ -1,0 +1,54 @@
+{
+  "projectType": "cli-tool",
+  "projectName": "Tic-Tac-Toe",
+  "projectDescription": "A Python-based command-line Tic-Tac-Toe game with unbeatable AI using the minimax algorithm",
+  "theme": "almond",
+  "primaryColor": "#FF6B6B",
+  "lightColor": "#FFE66D",
+  "darkColor": "#4ECDC4",
+  "navigation": {
+    "groups": [
+      {
+        "group": "Get Started",
+        "pages": [
+          "introduction",
+          "quickstart"
+        ]
+      },
+      {
+        "group": "Playing the Game",
+        "pages": [
+          "how-to-play",
+          "game-modes"
+        ]
+      },
+      {
+        "group": "AI Players",
+        "pages": [
+          "ai-overview",
+          "minimax-algorithm"
+        ]
+      },
+      {
+        "group": "API Reference",
+        "pages": [
+          "api/game",
+          "api/players"
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Three player types: Human, Random AI, and Genius AI",
+    "Unbeatable AI using minimax algorithm",
+    "Interactive command-line interface",
+    "Clean object-oriented design"
+  ],
+  "publicApiSurface": [
+    "TicTacToe",
+    "HumanPlayer",
+    "RandomComputerPlayer",
+    "GeniusComputerPlayer",
+    "play()"
+  ]
+}
