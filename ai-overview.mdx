@@ -1,0 +1,165 @@
+---
+title: 'AI Players Overview'
+description: 'Understanding the different player types in the Tic-Tac-Toe game'
+---
+
+## Introduction
+
+The Tic-Tac-Toe game implements three distinct player types, each with different decision-making capabilities. All player types inherit from a base `Player` class, creating a flexible architecture that allows for easy player switching and game setup.
+
+## Player Type Architecture
+
+The game uses a class hierarchy where all player types inherit from a base `Player` class:
+
+```python player.py
+class Player:
+    def __init__(self, letter) -> None:
+        # Letter is 'X' or 'O'
+        self.letter = letter
+
+    def get_move(self, game):
+        pass
+```
+
+Each player type implements the `get_move()` method differently to determine how moves are selected.
+
+## The Three Player Types
+
+<Steps>
+  <Step title="HumanPlayer">
+    **Interactive human input player**
+    
+    The `HumanPlayer` prompts the user to input their move via the command line. It validates that the input is a valid integer between 0-8 and that the chosen square is available.
+
+    ```python player.py
+    class HumanPlayer(Player):
+        def __init__(self, letter) -> None:
+            super().__init__(letter)
+
+        def get_move(self, game):
+            valid_square = False
+            val = None
+            while not valid_square:
+                square = input(self.letter + "\'s turn. Input move (0-8): ")
+                # We're going to check that this is a correct value by trying to cast
+                try:
+                    val = int(square)
+                    if val not in game.available_moves():
+                        raise ValueError
+                    valid_square = True
+                except ValueError:
+                    print("Invalid square. Try again.")
+            return val
+    ```
+
+    <Info>
+    **Use Case:** When you want to play the game yourself. The player will be prompted at each turn to enter a number from 0-8 representing the board position.
+    </Info>
+  </Step>
+
+  <Step title="RandomComputerPlayer">
+    **Random move selection AI**
+    
+    The `RandomComputerPlayer` is a simple AI that randomly selects any available move on the board. This creates an easy-to-beat opponent.
+
+    ```python player.py
+    class RandomComputerPlayer(Player):
+        def __init__(self, letter) -> None:
+            super().__init__(letter)
+
+        def get_move(self, game):
+            square = random.choice(game.available_moves())
+            return square
+    ```
+
+    <Info>
+    **Use Case:** Great for beginners or testing purposes. Provides unpredictable but non-strategic gameplay. Good for watching quick simulated games or practicing against a weak opponent.
+    </Info>
+  </Step>
+
+  <Step title="GeniusComputerPlayer">
+    **Unbeatable AI using minimax algorithm**
+    
+    The `GeniusComputerPlayer` uses the minimax algorithm to play perfectly. This AI evaluates all possible future game states to select the optimal move, making it impossible to beat (you can only tie or lose).
+
+    ```python player.py
+    class GeniusComputerPlayer(Player):
+        def __init__(self, letter):
+            super().__init__(letter)
+
+        def get_move(self, game):
+            if len(game.available_moves()) == 9:
+                # Randomly choose one
+                square = random.choice(game.available_moves())
+            else:
+                # Get the square based off the minimax algorithm
+                square = self.minimax(game, self.letter)['position']
+            return square
+    ```
+
+    <Note>
+    On the first move (when all 9 squares are available), the AI chooses randomly since all positions are equally optimal. For all subsequent moves, it uses the minimax algorithm to guarantee perfect play.
+    </Note>
+
+    <Info>
+    **Use Case:** For challenging gameplay or demonstrating an unbeatable AI. Perfect for understanding game theory and AI decision-making algorithms.
+    </Info>
+  </Step>
+</Steps>
+
+## How Each Player Makes Decisions
+
+<Accordion title="HumanPlayer Decision Process">
+  1. Prompts the user for input (0-8)
+  2. Validates that the input is an integer
+  3. Checks if the square is available in the game
+  4. If invalid, prompts again
+  5. Returns the valid square number
+</Accordion>
+
+<Accordion title="RandomComputerPlayer Decision Process">
+  1. Gets list of available moves from the game
+  2. Randomly selects one available move
+  3. Returns the selected square number
+  
+  No strategy or lookahead - purely random selection.
+</Accordion>
+
+<Accordion title="GeniusComputerPlayer Decision Process">
+  1. Checks if this is the first move (all 9 squares available)
+  2. If first move: randomly select any square
+  3. If not first move: use the minimax algorithm to evaluate all possible game states
+  4. Returns the optimal move that maximizes chances of winning while minimizing opponent's chances
+  
+  The minimax algorithm recursively simulates all possible future game states to find the best move.
+</Accordion>
+
+## Setting Up Different Game Modes
+
+You can configure different game modes by choosing different player combinations:
+
+```python game.py
+# Human vs Genius AI (challenging mode)
+x_player = HumanPlayer('X')
+o_player = GeniusComputerPlayer('O')
+
+# Human vs Random AI (easy mode)
+x_player = HumanPlayer('X')
+o_player = RandomComputerPlayer('O')
+
+# Watch two AIs play each other
+x_player = RandomComputerPlayer('X')
+o_player = GeniusComputerPlayer('O')
+
+# Two humans (pass-and-play)
+x_player = HumanPlayer('X')
+o_player = HumanPlayer('O')
+```
+
+## Learn More About the Minimax Algorithm
+
+For a detailed explanation of how the `GeniusComputerPlayer` achieves perfect play, see the [Minimax Algorithm](/minimax-algorithm) documentation page.
+
+<Tip>
+**Try it yourself:** Set up a game with `GeniusComputerPlayer` as both X and O to watch two perfect AIs play. The result will always be a tie!
+</Tip>

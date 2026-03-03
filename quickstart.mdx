@@ -1,80 +1,161 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: Get started with Tic-Tac-Toe CLI in under a minute
 ---
 
-## Get started in three steps
+## Installation
 
-Get your documentation site running locally and make your first customization.
-
-### Step 1: Set up your local environment
-
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
+<Steps>
+  <Step title="Clone the repository">
+    Download the source code to your local machine:
     
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
+    ```bash
+    git clone <repository-url>
+    cd <repository-directory>
+    ```
+  </Step>
+
+  <Step title="Verify Python installation">
+    Ensure you have Python 3 installed:
     
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
+    ```bash
+    python3 --version
+    ```
     
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    <Note>
+      This game requires Python 3.x. No external dependencies or package installations are needed.
+    </Note>
+  </Step>
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+  <Step title="Navigate to the source directory">
+    Change to the directory containing the game files:
+    
+    ```bash
+    cd workspace/source
+    ```
+  </Step>
+</Steps>
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+## Run your first game
 
-### Step 3: Go live
+<Steps>
+  <Step title="Start the game">
+    Run the main game script:
+    
+    ```bash
+    python3 game.py
+    ```
+    
+    By default, the game is configured for a human player (X) versus the genius AI (O).
+  </Step>
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+  <Step title="View the board positions">
+    When the game starts, you'll see the position numbers:
+    
+    ```
+    | 0 | 1 | 2 |
+    | 3 | 4 | 5 |
+    | 6 | 7 | 8 |
+    ```
+    
+    These numbers correspond to the squares where you can place your move.
+  </Step>
+
+  <Step title="Make your move">
+    Enter a number (0-8) when prompted:
+    
+    ```
+    X's turn. Input move (0-8): 4
+    ```
+    
+    <Tip>
+      Position 4 is the center square - a strong opening move in Tic-Tac-Toe!
+    </Tip>
+  </Step>
+
+  <Step title="Continue playing">
+    The game will display the updated board after each move and alternate between players automatically.
+  </Step>
+</Steps>
+
+## Example gameplay
+
+Here's what a typical game session looks like:
+
+```bash Terminal output
+| 0 | 1 | 2 |
+| 3 | 4 | 5 |
+| 6 | 7 | 8 |
+X's turn. Input move (0-8): 4
+X makes a move to square 4
+|   |   |   |
+|   | X |   |
+|   |   |   |
+
+O makes a move to square 0
+| O |   |   |
+|   | X |   |
+|   |   |   |
+
+X's turn. Input move (0-8): 8
+X makes a move to square 8
+| O |   |   |
+|   | X |   |
+|   |   | X |
+
+O makes a move to square 2
+| O |   | O |
+|   | X |   |
+|   |   | X |
+
+X's turn. Input move (0-8): 0
+Invalid square. Try again.
+X's turn. Input move (0-8): 6
+X makes a move to square 6
+| O |   | O |
+|   | X |   |
+| X |   | X |
+
+O makes a move to square 1
+| O | O | O |
+|   | X |   |
+| X |   | X |
+
+O wins!
+```
+
+## Customize player types
+
+You can easily modify `game.py` to change the player configuration:
+
+```python game.py
+# Human vs Human
+x_player = HumanPlayer('X')
+o_player = HumanPlayer('O')
+
+# Random AI vs Genius AI
+x_player = RandomComputerPlayer('X')
+o_player = GeniusComputerPlayer('O')
+
+# Human vs Random AI
+x_player = HumanPlayer('X')
+o_player = RandomComputerPlayer('O')
+
+ttt = TicTacToe()
+play(ttt, x_player, o_player)
+```
+
+<Note>
+  The genius AI is unbeatable - you can only achieve a tie at best when playing optimally!
+</Note>
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
-
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="How to play" icon="gamepad" href="/how-to-play">
+    Learn detailed gameplay mechanics
+  </Card>
+  <Card title="Game modes" icon="chess" href="/game-modes">
+    Explore all player type combinations
+  </Card>
 </CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>

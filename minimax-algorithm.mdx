@@ -1,0 +1,254 @@
+---
+title: 'Minimax Algorithm'
+description: 'Deep dive into the minimax algorithm that powers the unbeatable AI'
+---
+
+## What is the Minimax Algorithm?
+
+The minimax algorithm is a decision-making algorithm used in game theory and artificial intelligence for minimizing the possible loss in a worst-case scenario. In the context of Tic-Tac-Toe, it creates a **truly unbeatable AI** by simulating all possible future game states and choosing the move that maximizes the AI's chances of winning while minimizing the opponent's chances.
+
+<Note>
+The name "minimax" comes from **minimizing** the **maximum** possible loss. The algorithm assumes that the opponent will also play optimally, making it robust against perfect play.
+</Note>
+
+## How It Creates an Unbeatable AI
+
+The minimax algorithm achieves perfect play through exhaustive game tree search:
+
+<Steps>
+  <Step title="Simulate All Possible Moves">
+    For each available square, the algorithm simulates making that move and explores all possible future game states.
+  </Step>
+  
+  <Step title="Recursive Evaluation">
+    After making a move, it recursively evaluates the opponent's best response, then the AI's response to that, and so on until the game ends.
+  </Step>
+  
+  <Step title="Score Each Outcome">
+    Terminal game states (win, lose, or tie) are assigned numeric scores. The algorithm backtracks these scores to determine which current move leads to the best outcome.
+  </Step>
+  
+  <Step title="Choose Optimal Move">
+    The AI selects the move that guarantees the best result assuming the opponent also plays perfectly.
+  </Step>
+</Steps>
+
+<Info>
+Because Tic-Tac-Toe has a finite and relatively small game tree (~255,168 possible game states), the minimax algorithm can explore the entire tree quickly, guaranteeing optimal play.
+</Info>
+
+## Implementation in GeniusComputerPlayer
+
+Here's the complete minimax implementation from the `GeniusComputerPlayer` class:
+
+```python player.py (lines 61-95)
+def minimax(self, state, player):
+    max_player = self.letter
+    other_player = 'O' if player == 'X' else 'X'
+
+    if state.current_winner == other_player:
+        return {
+            'position': None,
+            'score': 1 * (state.num_empty_squares() + 1) if other_player == max_player else -1 * (
+                state.num_empty_squares() + 1)
+        }
+    elif not state.empty_squares():
+        return {'position': None, 'score': 0}
+
+    if player == max_player:
+        best = {'position': None, 'score': -math.inf}
+    else:
+        best = {'position': None, 'score': math.inf}
+
+    for possible_move in state.available_moves():
+        # Step 1: make a move, try that spot
+        state.make_move(possible_move, player)
+        # Step 2: recurse using minimax to simulate a game after making that move
+        sim_score = self.minimax(state, other_player)  # now, we alternate players
+        # Step 3: undo the move
+        state.board[possible_move] = " "
+        state.current_winner = None
+        sim_score['position'] = possible_move  # Otherwise this will get messed up from the recursion
+        # Step 4: update the dictionaries if necessary
+        if player == max_player:
+            if sim_score['score'] > best['score']:
+                best = sim_score  # Replace best
+        else:  # But minimize the other player
+            if sim_score['score'] < best['score']:
+                best = sim_score  # Replace best
+    return best
+```
+
+## Breaking Down the Implementation
+
+### Base Cases: Terminal States
+
+<Accordion title="Someone Won the Game">
+```python
+if state.current_winner == other_player:
+    return {
+        'position': None,
+        'score': 1 * (state.num_empty_squares() + 1) if other_player == max_player else -1 * (
+            state.num_empty_squares() + 1)
+    }
+```
+
+When the game has a winner:
+- **Positive score** if the AI (`max_player`) won
+- **Negative score** if the opponent won
+- The score is weighted by the number of empty squares remaining, favoring faster wins and slower losses
+</Accordion>
+
+<Accordion title="Board is Full (Tie)">
+```python
+elif not state.empty_squares():
+    return {'position': None, 'score': 0}
+```
+
+A tie game returns a neutral score of 0, as it's neither a win nor a loss.
+</Accordion>
+
+### Recursive Approach: The Game Tree
+
+The algorithm explores the game tree through recursion:
+
+```python
+for possible_move in state.available_moves():
+    # Step 1: make a move, try that spot
+    state.make_move(possible_move, player)
+    # Step 2: recurse using minimax to simulate a game after making that move
+    sim_score = self.minimax(state, other_player)  # now, we alternate players
+    # Step 3: undo the move
+    state.board[possible_move] = " "
+    state.current_winner = None
+    sim_score['position'] = possible_move
+```
+
+<Steps>
+  <Step title="Try Each Possible Move">
+    The algorithm iterates through all available squares on the board.
+  </Step>
+  
+  <Step title="Simulate the Move">
+    It makes the move on the game state to explore that branch of the game tree.
+  </Step>
+  
+  <Step title="Recurse with Opponent's Turn">
+    It calls itself recursively, switching to the other player to simulate their best response.
+  </Step>
+  
+  <Step title="Undo the Move">
+    After exploring that branch, it resets the board to try other possibilities. This is crucial for exploring all branches.
+  </Step>
+</Steps>
+
+<Tip>
+The "undo" step (resetting the board) is what allows the algorithm to explore multiple branches without creating multiple copies of the game state, saving memory.
+</Tip>
+
+### Scoring System: Maximizing and Minimizing
+
+The algorithm uses different strategies depending on whose turn it is:
+
+<Accordion title="Maximizing Player (The AI)">
+```python
+if player == max_player:
+    best = {'position': None, 'score': -math.inf}
+    # ...
+    if sim_score['score'] > best['score']:
+        best = sim_score  # Replace best
+```
+
+When it's the AI's turn (`max_player`), it starts with the worst possible score (`-infinity`) and selects moves that **maximize** the score. It wants the highest score possible.
+</Accordion>
+
+<Accordion title="Minimizing Player (The Opponent)">
+```python
+else:
+    best = {'position': None, 'score': math.inf}
+    # ...
+    if sim_score['score'] < best['score']:
+        best = sim_score  # Replace best
+```
+
+When simulating the opponent's turn, it assumes they will play optimally and **minimize** the AI's score. It starts with the best possible score for the AI (`+infinity`) and selects moves that make it worse for the AI.
+</Accordion>
+
+<Note>
+This is the core of minimax: the AI maximizes while assuming the opponent will minimize. This creates a robust strategy that works against optimal play.
+</Note>
+
+### Move Selection: Putting It All Together
+
+In the `get_move()` method, the minimax algorithm is called to determine the best move:
+
+```python player.py
+def get_move(self, game):
+    if len(game.available_moves()) == 9:
+        # Randomly choose one
+        square = random.choice(game.available_moves())
+    else:
+        # Get the square based off the minimax algorithm
+        square = self.minimax(game, self.letter)['position']
+    return square
+```
+
+The minimax method returns a dictionary with:
+- `'position'`: The optimal square to move to (0-8)
+- `'score'`: The expected outcome value of that move
+
+<Info>
+On the very first move (when all 9 squares are available), the AI chooses randomly since all positions are mathematically equivalent for the first player.
+</Info>
+
+## Why Weighted Scoring?
+
+Notice this scoring calculation:
+
+```python
+score: 1 * (state.num_empty_squares() + 1) if other_player == max_player else -1 * (
+    state.num_empty_squares() + 1)
+```
+
+The score is multiplied by the number of empty squares plus one. This creates a preference for:
+- **Winning faster** (more empty squares = higher positive score)
+- **Losing slower** (more empty squares = more negative score, so AI tries to prolong the game)
+
+<Tip>
+This weighted scoring makes the AI more "aggressive" when winning and more "defensive" when losing, creating more interesting gameplay even though the outcome is guaranteed.
+</Tip>
+
+## Learn More
+
+The implementation is based on these excellent resources:
+
+<CardGroup cols={2}>
+  <Card title="YouTube Tutorial" icon="youtube" href="https://www.youtube.com/watch?v=8ext9G7xspg">
+    Video walkthrough of implementing Tic-Tac-Toe with minimax
+  </Card>
+  <Card title="FreeCodeCamp Guide" icon="book" href="https://www.freecodecamp.org/news/minimax-algorithm-guide-how-to-create-an-unbeatable-ai/">
+    Comprehensive guide to the minimax algorithm
+  </Card>
+</CardGroup>
+
+## Try It Yourself
+
+Experiment with the `GeniusComputerPlayer` to see minimax in action:
+
+```python
+# You vs unbeatable AI
+x_player = HumanPlayer('X')
+o_player = GeniusComputerPlayer('O')
+
+# Watch two perfect AIs battle (always ties)
+x_player = GeniusComputerPlayer('X')
+o_player = GeniusComputerPlayer('O')
+
+# See the difference: random vs genius
+x_player = RandomComputerPlayer('X')
+o_player = GeniusComputerPlayer('O')
+```
+
+<Warning>
+**Challenge:** Try to beat the `GeniusComputerPlayer`. Spoiler alert: the best you can achieve is a tie!
+</Warning>

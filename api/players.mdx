@@ -1,0 +1,305 @@
+---
+title: 'Player Classes'
+description: 'Player implementations including human input and AI opponents'
+---
+
+## Player Base Class
+
+The abstract base class for all player types in the Tic-Tac-Toe game.
+
+### Constructor
+
+#### `__init__(letter)`
+
+Initializes a player with their assigned letter.
+
+<ParamField path="letter" type="str" required>
+  The player's letter, either 'X' or 'O'
+</ParamField>
+
+**Returns:** `None`
+
+```python
+def __init__(self, letter) -> None:
+    # Letter is 'X' or 'O'
+    self.letter = letter
+```
+
+**Attributes:**
+- `letter`: String ('X' or 'O') representing the player's mark
+
+---
+
+### Methods
+
+#### `get_move(game)`
+
+Abstract method to get the player's next move. Must be implemented by subclasses.
+
+<ParamField path="game" type="TicTacToe" required>
+  The current game instance
+</ParamField>
+
+**Returns:** `int` - The board position (0-8) for the move
+
+```python
+def get_move(self, game):
+    pass
+```
+
+---
+
+## HumanPlayer Class
+
+Implements a human player that accepts input from the console.
+
+**Inherits from:** `Player`
+
+### Constructor
+
+#### `__init__(letter)`
+
+<ParamField path="letter" type="str" required>
+  The player's letter, either 'X' or 'O'
+</ParamField>
+
+```python
+def __init__(self, letter) -> None:
+    super().__init__(letter)
+```
+
+---
+
+### Methods
+
+#### `get_move(game)`
+
+Prompts the user to input a move from the console and validates it.
+
+<ParamField path="game" type="TicTacToe" required>
+  The current game instance
+</ParamField>
+
+**Returns:** `int` - The validated board position (0-8) chosen by the user
+
+```python
+def get_move(self, game):
+    valid_square = False
+    val = None
+    while not valid_square:
+        square = input(self.letter + "\'s turn. Input move (0-8): ")
+        # We're going to check that this is a correct value by trying to cast
+        try:
+            val = int(square)
+            if val not in game.available_moves():
+                raise ValueError
+            valid_square = True
+        except ValueError:
+            print("Invalid square. Try again.")
+    return val
+```
+
+<Note>
+This method loops until the user provides a valid move (0-8) that corresponds to an available square.
+</Note>
+
+**Validation:**
+- Input must be a valid integer
+- Input must be in range 0-8
+- The chosen square must be available (not already occupied)
+
+---
+
+## RandomComputerPlayer Class
+
+Implements a computer player that makes random valid moves.
+
+**Inherits from:** `Player`
+
+### Constructor
+
+#### `__init__(letter)`
+
+<ParamField path="letter" type="str" required>
+  The player's letter, either 'X' or 'O'
+</ParamField>
+
+```python
+def __init__(self, letter) -> None:
+    super().__init__(letter)
+```
+
+---
+
+### Methods
+
+#### `get_move(game)`
+
+Randomly selects an available move from the board.
+
+<ParamField path="game" type="TicTacToe" required>
+  The current game instance
+</ParamField>
+
+**Returns:** `int` - A randomly selected board position from available moves
+
+```python
+def get_move(self, game):
+    square = random.choice(game.available_moves())
+    return square
+```
+
+---
+
+## GeniusComputerPlayer Class
+
+Implements an unbeatable AI opponent using the minimax algorithm.
+
+**Inherits from:** `Player`
+
+### Constructor
+
+#### `__init__(letter)`
+
+<ParamField path="letter" type="str" required>
+  The player's letter, either 'X' or 'O'
+</ParamField>
+
+```python
+def __init__(self, letter):
+    super().__init__(letter)
+```
+
+---
+
+### Methods
+
+#### `get_move(game)`
+
+Determines the optimal move using the minimax algorithm.
+
+<ParamField path="game" type="TicTacToe" required>
+  The current game instance
+</ParamField>
+
+**Returns:** `int` - The optimal board position calculated by minimax
+
+```python
+def get_move(self, game):
+    if len(game.available_moves()) == 9:
+        # Randomly choose one
+        square = random.choice(game.available_moves())
+    else:
+        # Get the square based off the minimax algorithm
+        square = self.minimax(game, self.letter)['position']
+    return square
+```
+
+<Note>
+For the first move (empty board), the algorithm chooses randomly to add variety. For all subsequent moves, it uses minimax to guarantee optimal play.
+</Note>
+
+---
+
+#### `minimax(state, player)`
+
+Recursively evaluates all possible game states to find the optimal move using the minimax algorithm.
+
+<ParamField path="state" type="TicTacToe" required>
+  The current game state to evaluate
+</ParamField>
+
+<ParamField path="player" type="str" required>
+  The current player ('X' or 'O') in the recursive evaluation
+</ParamField>
+
+**Returns:** `dict` - Dictionary containing:
+- `position`: The optimal move position (0-8) or `None` for terminal states
+- `score`: The evaluated score for this state
+
+```python
+def minimax(self, state, player):
+    max_player = self.letter
+    other_player = 'O' if player == 'X' else 'X'
+
+    if state.current_winner == other_player:
+        return {
+            'position': None,
+            'score': 1 * (state.num_empty_squares() + 1) if other_player == max_player else -1 * (
+                state.num_empty_squares() + 1)
+        }
+    elif not state.empty_squares():
+        return {'position': None, 'score': 0}
+
+    if player == max_player:
+        best = {'position': None, 'score': -math.inf}
+    else:
+        best = {'position': None, 'score': math.inf}
+
+    for possible_move in state.available_moves():
+        # Step 1: make a move, try that spot
+        state.make_move(possible_move, player)
+        # Step 2: recurse using minimax to simulate a game after making that move
+        sim_score = self.minimax(state, other_player)  # now, we alternate players
+        # Step 3: undo the move
+        state.board[possible_move] = " "
+        state.current_winner = None
+        sim_score['position'] = possible_move  # Otherwise this will get messed up from the recursion
+        # Step 4: update the dictionaries if necessary
+        if player == max_player:
+            if sim_score['score'] > best['score']:
+                best = sim_score  # Replace best
+        else:  # But minimize the other player
+            if sim_score['score'] < best['score']:
+                best = sim_score  # Replace best
+    return best
+```
+
+<Accordion title="Minimax Algorithm Explained">
+  The minimax algorithm works by:
+  
+  1. **Base Cases**:
+     - If there's a winner, return a score weighted by remaining squares
+     - If the board is full (tie), return a score of 0
+  
+  2. **Recursive Evaluation**:
+     - For each available move, simulate making that move
+     - Recursively evaluate the resulting game state
+     - Undo the move to restore the original state
+  
+  3. **Maximizing vs Minimizing**:
+     - The AI (max_player) tries to maximize the score
+     - The opponent tries to minimize the score
+     - This creates an adversarial search tree
+  
+  4. **Scoring**:
+     - Positive scores favor the AI
+     - Negative scores favor the opponent
+     - Scores are weighted by the number of empty squares (faster wins are better)
+</Accordion>
+
+### Usage Example
+
+```python
+from player import HumanPlayer, RandomComputerPlayer, GeniusComputerPlayer
+from game import TicTacToe, play
+
+# Human vs Random AI
+x_player = HumanPlayer('X')
+o_player = RandomComputerPlayer('O')
+
+# Human vs Unbeatable AI
+x_player = HumanPlayer('X')
+o_player = GeniusComputerPlayer('O')
+
+# Two AIs playing each other
+x_player = RandomComputerPlayer('X')
+o_player = GeniusComputerPlayer('O')
+
+ttt = TicTacToe()
+play(ttt, x_player, o_player)
+```
+
+<Note>
+The GeniusComputerPlayer is unbeatable when playing optimally. The best a human player can achieve is a tie.
+</Note>

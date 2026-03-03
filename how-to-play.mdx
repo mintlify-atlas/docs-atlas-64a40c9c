@@ -1,0 +1,208 @@
+---
+title: 'How to Play'
+description: 'Learn how to play Tic-Tac-Toe in the terminal'
+---
+
+## Board Layout
+
+The Tic-Tac-Toe board consists of 9 positions arranged in a 3x3 grid. Each position is numbered from 0 to 8:
+
+```
+| 0 | 1 | 2 |
+| 3 | 4 | 5 |
+| 6 | 7 | 8 |
+```
+
+The board is initialized as an empty array and displayed using the `print_board_nums()` method:
+
+```python game.py
+@staticmethod
+def print_board_nums():
+    # 0 | 1 | 2 etc (tells us what number corresponds to what box)
+    number_board = [[str(i) for i in range(j*3, (j+1)*3)] for j in range(3)]
+    for row in number_board:
+        print("| " + " | ".join(row) + " |")
+```
+
+## Making Moves
+
+When it's your turn, you'll be prompted to enter a number between 0-8 corresponding to the position where you want to place your mark (X or O).
+
+<Tabs>
+  <Tab title="Human Player Input">
+    ```python player.py
+    def get_move(self, game):
+        valid_square = False
+        val = None
+        while not valid_square:
+            square = input(self.letter + "'s turn. Input move (0-8): ")
+            # We're going to check that this is a correct value by trying to cast
+            try:
+                val = int(square)
+                if val not in game.available_moves():
+                    raise ValueError
+                valid_square = True
+            except ValueError:
+                print("Invalid square. Try again.")
+        return val
+    ```
+  </Tab>
+  <Tab title="Move Validation">
+    The game validates moves through the `make_move()` method:
+    
+    ```python game.py
+    def make_move(self, square, letter):
+        # If valid move, then make the move (assign square to letter)
+        # then return True
+        # If invalid, return False
+        if self.board[square] == " ":
+            self.board[square] = letter
+            if self.winner(square, letter):
+                self.current_winner = letter
+            return True
+        return False
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+  You can only make a move on an empty square. The game will validate your input and prompt you again if you choose an invalid position.
+</Note>
+
+## Win Conditions
+
+You win by getting three of your marks in a row. The game checks for wins in three ways:
+
+<CardGroup cols={3}>
+  <Card title="Horizontal" icon="arrows-left-right">
+    Three in a row across any row
+  </Card>
+  <Card title="Vertical" icon="arrows-up-down">
+    Three in a column from top to bottom
+  </Card>
+  <Card title="Diagonal" icon="arrow-trend-up">
+    Three from corner to corner
+  </Card>
+</CardGroup>
+
+### Win Detection Algorithm
+
+The game checks for a winner after each move:
+
+```python game.py
+def winner(self, square, letter):
+    # Winner if 3 in a row anywhere
+
+    # Check row
+    row_ind = square // 3
+    row = self.board[row_ind*3 : (row_ind + 1) * 3]
+    if all([spot == letter for spot in row]):
+        return True
+
+    # Check column
+    col_ind = square % 3
+    column = [self.board[col_ind+i*3] for i in range(3)]
+    if all([spot == letter for spot in column]):
+        return True
+
+    # Check diagonals
+    # But only if the square is an even number (2, 4, 6, 8)
+    if square % 2 == 0:
+        diagonal1 = [self.board[i] for i in [0, 4, 8]]  # Left to rigth diagonal
+        if all([spot == letter for spot in diagonal1]):
+            return True
+        diagonal2 = [self.board[i] for i in [2, 4, 6]]  # Rigth to left diagonal
+        if all([spot == letter for spot in diagonal2]):
+            return True
+
+    # If all of these fall
+    return False
+```
+
+<Warning>
+  Diagonal wins are only checked when a move is made on an even-numbered position (0, 2, 4, 6, 8) since only these positions can be part of a diagonal.
+</Warning>
+
+## Terminal Interaction Flow
+
+The game follows this sequence during play:
+
+1. **Board Display** - Shows the numbered positions at the start
+2. **Player Turn** - Prompts the current player for input
+3. **Move Execution** - Validates and applies the move
+4. **Board Update** - Displays the updated board state
+5. **Win Check** - Determines if there's a winner
+6. **Player Switch** - Alternates between X and O
+
+```python game.py
+lettera = 'X'  # Starting letter
+# Iterate while the game stil has empty squares
+while game.empty_squares():
+    # Get the move from the appropiate player
+    if letter == 'O':
+        square = o_player.get_move(game)
+    else:
+        square = x_player.get_move(game)
+
+    # Let's make a move!
+    if game.make_move(square, letter):
+        if print_game:
+            print(letter + f" makes a move to square {square}")
+            game.print_board()
+            print("")
+
+        if game.current_winner:
+            if print_game:
+                print(letter + " wins!")
+            return letter
+
+        # After we made our move, we need to alternate letter
+        letter = 'O' if letter == 'X' else 'X'  # Switches player
+
+    # Tiny break
+    time.sleep(0.8)
+```
+
+## Example Gameplay Session
+
+Here's what a typical game looks like in the terminal:
+
+```bash
+| 0 | 1 | 2 |
+| 3 | 4 | 5 |
+| 6 | 7 | 8 |
+
+X's turn. Input move (0-8): 4
+X makes a move to square 4
+|   |   |   |
+|   | X |   |
+|   |   |   |
+
+O makes a move to square 2
+|   |   | O |
+|   | X |   |
+|   |   |   |
+
+X's turn. Input move (0-8): 0
+X makes a move to square 0
+| X |   | O |
+|   | X |   |
+|   |   |   |
+
+O makes a move to square 5
+| X |   | O |
+|   | X | O |
+|   |   |   |
+
+X's turn. Input move (0-8): 8
+X makes a move to square 8
+| X |   | O |
+|   | X | O |
+|   |   | X |
+
+X wins!
+```
+
+<Note>
+  The game includes a 0.8-second delay between moves for better readability, especially useful when watching AI players compete.
+</Note>

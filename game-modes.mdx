@@ -1,0 +1,229 @@
+---
+title: 'Game Modes'
+description: 'Configure different player combinations for various game modes'
+---
+
+## Overview
+
+The Tic-Tac-Toe game supports multiple game modes by combining different player types. You can configure any combination of Human, Random AI, or Genius AI players.
+
+## Available Player Types
+
+<CardGroup cols={3}>
+  <Card title="Human Player" icon="user">
+    Interactive player that prompts for input in the terminal
+  </Card>
+  <Card title="Random AI" icon="dice">
+    Computer player that makes random valid moves
+  </Card>
+  <Card title="Genius AI" icon="brain">
+    Unbeatable AI using the minimax algorithm
+  </Card>
+</CardGroup>
+
+## Game Mode Configurations
+
+### Human vs Human
+
+Two human players take turns entering moves in the terminal.
+
+```python game.py
+x_player = HumanPlayer('X')
+o_player = HumanPlayer('O')
+
+ttt = TicTacToe()
+play(ttt, x_player, o_player)
+```
+
+<Note>
+  Perfect for playing against a friend on the same computer. Each player will be prompted when it's their turn.
+</Note>
+
+### Human vs Random AI
+
+Play against a computer opponent that makes random moves.
+
+<Tabs>
+  <Tab title="Human as X">
+    ```python game.py
+    x_player = HumanPlayer('X')
+    o_player = RandomComputerPlayer('O')
+    
+    ttt = TicTacToe()
+    play(ttt, x_player, o_player)
+    ```
+  </Tab>
+  <Tab title="Human as O">
+    ```python game.py
+    x_player = RandomComputerPlayer('X')
+    o_player = HumanPlayer('O')
+    
+    ttt = TicTacToe()
+    play(ttt, x_player, o_player)
+    ```
+  </Tab>
+</Tabs>
+
+#### How Random AI Works
+
+The Random AI player selects randomly from available moves:
+
+```python player.py
+class RandomComputerPlayer(Player):
+    def __init__(self, letter) -> None:
+        super().__init__(letter)
+
+    def get_move(self, game):
+        square = random.choice(game.available_moves())
+        return square
+```
+
+### Human vs Genius AI
+
+Challenge yourself against an unbeatable AI opponent that uses the minimax algorithm.
+
+```python game.py
+x_player = HumanPlayer('X')
+o_player = GeniusComputerPlayer('O')
+
+ttt = TicTacToe()
+play(ttt, x_player, o_player)
+```
+
+<Warning>
+  The Genius AI is truly unbeatable. The best you can achieve is a tie if you play perfectly!
+</Warning>
+
+#### How Genius AI Works
+
+The Genius AI uses the minimax algorithm to evaluate all possible future game states:
+
+```python player.py
+def get_move(self, game):
+    if len(game.available_moves()) == 9:
+        # Randomly choose one
+        square = random.choice(game.available_moves())
+    else:
+        # Get the square based off the minimax algorithm
+        square = self.minimax(game, self.letter)['position']
+    return square
+```
+
+The minimax algorithm recursively simulates all possible moves to find the optimal play:
+
+```python player.py
+def minimax(self, state, player):
+    max_player = self.letter
+    other_player = 'O' if player == 'X' else 'X'
+
+    if state.current_winner == other_player:
+        return {
+            'position': None,
+            'score': 1 * (state.num_empty_squares() + 1) if other_player == max_player else -1 * (
+                state.num_empty_squares() + 1)
+        }
+    elif not state.empty_squares():
+        return {'position': None, 'score': 0}
+
+    if player == max_player:
+        best = {'position': None, 'score': -math.inf}
+    else:
+        best = {'position': None, 'score': math.inf}
+
+    for possible_move in state.available_moves():
+        # Step 1: make a move, try that spot
+        state.make_move(possible_move, player)
+        # Step 2: recurse using minimax to simulate a game after making that move
+        sim_score = self.minimax(state, other_player)  # now, we alternate players
+        # Step 3: undo the move
+        state.board[possible_move] = " "
+        state.current_winner = None
+        sim_score['position'] = possible_move  # Otherwise this will get messed up from the recursion
+        # Step 4: update the dictionaries if necessary
+        if player == max_player:
+            if sim_score['score'] > best['score']:
+                best = sim_score  # Replace best
+        else:  # But minimize the other player
+            if sim_score['score'] < best['score']:
+                best = sim_score  # Replace best
+    return best
+```
+
+### AI vs AI
+
+Watch two AI players compete against each other.
+
+<Tabs>
+  <Tab title="Random vs Random">
+    ```python game.py
+    x_player = RandomComputerPlayer('X')
+    o_player = RandomComputerPlayer('O')
+    
+    ttt = TicTacToe()
+    play(ttt, x_player, o_player)
+    ```
+    Random moves from both players - unpredictable outcomes!
+  </Tab>
+  <Tab title="Random vs Genius">
+    ```python game.py
+    x_player = RandomComputerPlayer('X')
+    o_player = GeniusComputerPlayer('O')
+    
+    ttt = TicTacToe()
+    play(ttt, x_player, o_player)
+    ```
+    The Genius AI will always win or tie.
+  </Tab>
+  <Tab title="Genius vs Genius">
+    ```python game.py
+    x_player = GeniusComputerPlayer('X')
+    o_player = GeniusComputerPlayer('O')
+    
+    ttt = TicTacToe()
+    play(ttt, x_player, o_player)
+    ```
+    Perfect play from both sides - always results in a tie.
+  </Tab>
+</Tabs>
+
+<Note>
+  AI vs AI mode is great for testing the algorithms or demonstrating the game's behavior without manual input.
+</Note>
+
+## Configuring Player Types in the Main Script
+
+The default configuration in `game.py` (lines 116-124) shows how to set up players:
+
+```python game.py
+if __name__ == "__main__":
+    x_player = HumanPlayer('X')
+    # x_player = RandomComputerPlayer('X')
+    # x_player = GeniusComputerPlayer('O')
+
+    # o_player = RandomComputerPlayer('O')
+    o_player = GeniusComputerPlayer('O')
+
+    ttt = TicTacToe()
+    play(ttt, x_player, o_player)
+```
+
+To change game modes:
+
+1. **Comment out** the current player assignments
+2. **Uncomment** or add new player instantiations with your desired types
+3. **Ensure** one player is assigned to 'X' and one to 'O'
+4. **Run** the script to start the game
+
+<Warning>
+  Make sure to assign the correct letter ('X' or 'O') to each player. X always goes first!
+</Warning>
+
+## Quick Reference
+
+| Mode | X Player | O Player | Best For |
+|------|----------|----------|----------|
+| Human vs Human | `HumanPlayer('X')` | `HumanPlayer('O')` | Playing with a friend |
+| Human vs Random | `HumanPlayer('X')` | `RandomComputerPlayer('O')` | Casual practice |
+| Human vs Genius | `HumanPlayer('X')` | `GeniusComputerPlayer('O')` | Challenge yourself |
+| Random vs Random | `RandomComputerPlayer('X')` | `RandomComputerPlayer('O')` | Watching chaos unfold |
+| Genius vs Genius | `GeniusComputerPlayer('X')` | `GeniusComputerPlayer('O')` | Demonstrating perfect play |

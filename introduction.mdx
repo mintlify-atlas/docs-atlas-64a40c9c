@@ -1,0 +1,71 @@
+---
+title: Introduction
+description: A Python CLI implementation of Tic-Tac-Toe featuring multiple player types and an unbeatable AI
+---
+
+## Welcome to Tic-Tac-Toe CLI
+
+This is a clean, object-oriented Python implementation of the classic Tic-Tac-Toe game. Play against random AI, challenge an unbeatable genius AI powered by the minimax algorithm, or watch two computer players battle it out.
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Get up and running in under a minute
+  </Card>
+  <Card title="How to play" icon="gamepad" href="/how-to-play">
+    Learn the game controls and rules
+  </Card>
+  <Card title="Game modes" icon="chess" href="/game-modes">
+    Explore different player combinations
+  </Card>
+  <Card title="AI overview" icon="brain" href="/ai-overview">
+    Understand the minimax algorithm
+  </Card>
+</CardGroup>
+
+## Key features
+
+### Three player types
+
+Choose from three distinct player implementations:
+
+- **HumanPlayer** - Interactive command-line input for human players
+- **RandomComputerPlayer** - AI that randomly selects available moves
+- **GeniusComputerPlayer** - Unbeatable AI using the minimax algorithm
+
+All player types inherit from a common `Player` base class, making the design extensible and clean.
+
+### Unbeatable AI
+
+The `GeniusComputerPlayer` implements the minimax algorithm with depth-based scoring. This algorithm evaluates all possible game states to always choose the optimal move, making it impossible to beat (you can only tie or lose).
+
+### Interactive CLI
+
+The game features a clean command-line interface with:
+
+- Visual board representation with ASCII borders
+- Numbered position guides (0-8) to show available squares
+- Real-time move feedback and game state updates
+- Automatic turn alternation between X and O players
+
+### Clean OOP design
+
+The codebase follows object-oriented principles:
+
+- **TicTacToe class** - Manages board state, move validation, and win detection (game.py:14-77)
+- **Player hierarchy** - Base class with three concrete implementations (player.py:13-95)
+- **Separation of concerns** - Game logic separated from player logic
+- **Type hints** - Modern Python with type annotations for clarity
+
+## Quick example
+
+Here's how simple it is to start a game with a human player versus the genius AI:
+
+```python game.py
+x_player = HumanPlayer('X')
+o_player = GeniusComputerPlayer('O')
+
+ttt = TicTacToe()
+play(ttt, x_player, o_player)
+```
+
+The game automatically handles turn alternation, move validation, win detection, and displays the board after each move.
